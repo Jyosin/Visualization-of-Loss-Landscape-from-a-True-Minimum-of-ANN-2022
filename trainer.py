@@ -81,7 +81,7 @@ class Trainer:
         num = len(os.listdir(filepath))
         save_path = os.path.join(filepath,str(num)+'/')
         if os.path.exists(save_path):
-            self.model.save_weights(save_path)
+            self.model.save_weights(save_path+name, save_format=save_format)
         else:
             os.mkdir(save_path)
             self.model.save_weights(save_path+name, save_format=save_format)
