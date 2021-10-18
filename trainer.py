@@ -87,11 +87,12 @@ class Trainer:
             self.model.save_weights(save_path+name, save_format=save_format)
         print("model saved in {}".format(save_path+name))
 
-    def load_model_weights(self,filepath='./saved_models',num = -1,name='model'):
+    def load_model_weights(self,filepath='./saved_models',num = -1,name='model.h5'):
         if num == -1:
             num = len(os.listdir(filepath))-1
         filepath = os.path.join(filepath,str(num)+'/')
         if os.path.exists(filepath):
+            self.model.build = True
             self.model.load_weights(filepath+name)
             print("model load from {}".format(filepath+name))
         else:
