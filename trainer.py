@@ -77,14 +77,14 @@ class Trainer:
             print("loss:",self.metric.result().numpy())
             self.metric.reset_states()
 
-    def save_model_weights(self,filepath='./saved_models',name = 'model'):
+    def save_model_weights(self,filepath='./saved_models',name = 'model',save_format="h5"):
         num = len(os.listdir(filepath))
         save_path = os.path.join(filepath,str(num)+'/')
         if os.path.exists(save_path):
             self.model.save_weights(save_path)
         else:
             os.mkdir(save_path)
-            self.model.save_weights(save_path+name)
+            self.model.save_weights(save_path+name, save_format=save_format)
         print("model saved in {}".format(save_path+name))
 
     def load_model_weights(self,filepath='./saved_models',num = -1,name='model'):
