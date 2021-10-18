@@ -92,7 +92,7 @@ class Trainer:
             num = len(os.listdir(filepath))-1
         filepath = os.path.join(filepath,str(num)+'/')
         if os.path.exists(filepath):
-            self.model.build = True
+            self.model.built = True
             self.model.load_weights(filepath+name)
             print("model load from {}".format(filepath+name))
         else:
