@@ -25,11 +25,11 @@ def read_data_from_csv(filename='uniform.csv',
                                                     batch_size=batch_size,
                                                     column_names=CSV_COLUMNS,
                                                     shuffle=False,
-                                                    num_epochs=num_epochss)
+                                                    num_epochs=num_epochs)
     return dataset
 
 if __name__ == "__main__":
-    # data = uniform_generator(range=[-1.0,1.0])
-    # print(data)
-    # save_data_to_csv(data)
-    dataset = read_data_from_csv()
+     data = uniform_generator(range=[-1.0,1.0])
+     print(data)
+     save_data_to_csv(data)
+   # dataset = read_data_from_csv()
