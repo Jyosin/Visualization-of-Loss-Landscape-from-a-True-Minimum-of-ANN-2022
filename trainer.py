@@ -63,8 +63,15 @@ class Trainer:
 
         return loss
 
-    def valid_step(self):
-        pass
+    def valid_step(self,x):
+        inputs = x['x']
+        prediction = self.model(inputs)
+
+    def just_build(self):
+        iter_ds = iter(self.dataset)
+        x = iter_ds.get_next()
+        x['x'] = tf.reshape(x['x'],(-1,1))
+        self.model(x['x'])
 
     def run(self):
         iter_ds = iter(self.dataset)
@@ -107,6 +114,10 @@ if __name__ == "__main__":
                              'activations':['tanh','tanh','tanh']}, }
     
     trainer = Trainer(trainer_args)
+    trainer.just_build()
+    
+    trainer.save_model_weights()
+
     # trainer.save_model_weights()
-    trainer.load_model_weights()
+    # trainer.load_model_weights()
     
