@@ -117,10 +117,10 @@ if __name__ == "__main__":
                              'activations':['tanh','tanh','tanh']}, }
     
     trainer = Trainer(trainer_args)
-    trainer.just_build()
+    # trainer.just_build()
     
-    trainer.save_model_weights()
+    # trainer.save_model_weights()
 
     # trainer.save_model_weights()
-    # trainer.load_model_weights()
+    trainer.load_model_weights()
     
