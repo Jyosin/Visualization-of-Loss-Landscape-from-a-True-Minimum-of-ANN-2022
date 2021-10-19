@@ -3,7 +3,7 @@ from tensorflow import keras
 from data_generator import read_data_from_csv
 
 class Linear(keras.layers.Layer):
-    def __init__(self, units=32):
+    def __init__(self, units=32,name="Lin"):
         super(Linear, self).__init__()
         self.units = units
 
@@ -11,11 +11,12 @@ class Linear(keras.layers.Layer):
         w_init = tf.random_normal_initializer(seed=9527)
         self.w = tf.Variable(
             initial_value=w_init(shape=(input_shape[-1], self.units), dtype="float32"),
-            trainable=True,
+            trainable=True, name="w"
         )
         b_init = tf.zeros_initializer()
         self.b = tf.Variable(
-            initial_value=b_init(shape=(self.units,), dtype="float32"), trainable=True
+            initial_value=b_init(shape=(self.units,), dtype="float32"), trainable=True,
+            name="b"
         )
 
     def call(self, inputs):
