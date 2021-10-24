@@ -1,9 +1,8 @@
 import os
-import h5py
-import numpy as np
 import tensorflow as tf
 
-from trainer import Trainer
+from models import DNN
+from data_generator import read_data_from_csv
 
 class Plotter:
     def __init__(self, model):
