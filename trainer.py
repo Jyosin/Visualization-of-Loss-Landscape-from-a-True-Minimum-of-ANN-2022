@@ -112,9 +112,10 @@ class Trainer:
     def self_evaluate(self):
         iter_test = iter(self.dataset)
         self.metric.reset_states()
-
+        FLAG=1
         while True:
-            print("i am running")
+            print("i am running {}".format(FLAG))
+            FLAG+=1
             try:
                 x = iter_test.get_next()
             except:
