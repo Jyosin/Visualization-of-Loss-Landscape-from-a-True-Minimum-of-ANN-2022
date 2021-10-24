@@ -106,17 +106,17 @@ if __name__ == "__main__":
     trainer.model.summary()
     trainer.self_evaluate()
 
-    plotter = Plotter(trainer.model)
-    normalized_random_direction = plotter.creat_random_direction(norm='layer')
+    # plotter = Plotter(trainer.model)
+    # normalized_random_direction = plotter.creat_random_direction(norm='layer')
 
-    N = 1000
-    step = 1/100
-    plotter.set_weights([normalized_random_direction],step=-step*N/2)
+    # N = 1000
+    # step = 1/100
+    # plotter.set_weights([normalized_random_direction],step=-step*N/2)
     
-    # plotter.set_weights([normalized_random_direction], step=0.5)
+    # # plotter.set_weights([normalized_random_direction], step=0.5)
 
-    for i in range(N):
-        plotter.set_weights([normalized_random_direction], step=step)
-        avg_loss = trainer.self_eveliate()
-        with open("result_1000.csv","ab") as f:
-            np.savetxt(f, [avg_loss], comments="")
+    # for i in range(N):
+    #     plotter.set_weights([normalized_random_direction], step=step)
+    #     avg_loss = trainer.self_eveliate()
+    #     with open("result_1000.csv","ab") as f:
+    #         np.savetxt(f, [avg_loss], comments="")
