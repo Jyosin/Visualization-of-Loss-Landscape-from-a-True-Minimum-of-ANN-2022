@@ -152,4 +152,4 @@ if __name__ == "__main__":
     plotter.set_weights([normalized_random_direction], step=0.5)
 
     # avg_loss = trainer.self_evaluate()
-    # print(avg_loss)    
+    # print(avg_loss)    s
