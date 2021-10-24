@@ -1,6 +1,6 @@
 import os
 import h5py
-from numpy.lib.function_base import _parse_input_dimensions
+import numpy as np
 import tensorflow as tf
 
 from trainer import Trainer
@@ -30,7 +30,7 @@ class Plotter:
 
         weights = self.get_weights()
         for(weight,change) in zip(weights, changes):
-            weight +=change
+            weight.assign_add(change)
 
     def get_random_weights(self,weights):
         return [tf.random.normal(w.shape)for w in weights]
@@ -56,6 +56,7 @@ class Plotter:
                 normalized_direction.append(d/ (tf.norm(d)+1e-10))
         elif norm == 'd_layer':
             normalized_direction = direction/tf.norm(direction)
+        return normalized_direction
 
     def normalize_directions_for_weights(self,direction,weights, norm="filter", ignore="bias_bn"):
         normalized_direction = []
@@ -96,7 +97,7 @@ if __name__ == "__main__":
     trainer_args = {'loss':{'name':'mse'},
                     'metric':{'name':'Mean'},
                     'optimizer':{'name':'SGD','learning_rate':0.001},
-                    'dataset':{'name':'uniform','batch_size':12,'epoch':3},
+                    'dataset':{'name':'uniform','batch_size':100,'epoch':1},
                     'model':{'name':'DNN','units':[64,16,1],
                              'activations':['tanh','tanh','tanh']}, }
 
@@ -104,8 +105,18 @@ if __name__ == "__main__":
     trainer.just_build()
     trainer.model.summary()
     trainer.self_evaluate()
+
     plotter = Plotter(trainer.model)
     normalized_random_direction = plotter.creat_random_direction(norm='layer')
 
+    N = 1000
+    step = 1/100
+    plotter.set_weights([normalized_random_direction],step=-step*N/2)
     
     # plotter.set_weights([normalized_random_direction], step=0.5)
+
+    for i in range(N):
+        plotter.set_weights([normalized_random_direction], step=step)
+        avg_loss = trainer.self_eveliate()
+        with open("result_1000.csv","ab") as f:
+            np.savetxt(f, [avg_loss], comments="")
