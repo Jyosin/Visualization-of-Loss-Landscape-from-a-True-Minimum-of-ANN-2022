@@ -103,7 +103,7 @@ if __name__ == "__main__":
     trainer = Trainer(trainer_args)
     trainer.just_build()
     trainer.model.summary()
-
+    trainer.self_evaluate()
     plotter = Plotter(trainer.model)
     normalized_random_direction = plotter.creat_random_direction(norm='layer')
 
