@@ -114,13 +114,16 @@ class Trainer:
         self.metric.reset_states()
 
         while True:
+            print("i am running")
             try:
                 x = iter_test.get_next()
             except:
                 print("run out of data. ")
                 break
             x['x'] = tf.reshape(x['x'],(-1,1))
+            x['y'] = tf.reshape(x['y'],(-1,1))
             prediction = self.model(x['x'])
+
             loss = self.loss(prediction,x['y'])
             self.metric.update_state(loss)
         
