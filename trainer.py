@@ -109,7 +109,7 @@ class Trainer:
         else:
             print("path dosen't exits.")
 
-    def evaluate(self):
+    def self_evaluate(self):
         iter_test = iter(self.dataset)
         self.metric.reset_states()
 
