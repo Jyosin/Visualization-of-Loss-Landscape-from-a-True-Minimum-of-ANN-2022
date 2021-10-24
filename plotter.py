@@ -109,7 +109,7 @@ if __name__ == "__main__":
     plotter = Plotter(trainer.model)
     normalized_random_direction = plotter.creat_random_direction(norm='layer')
 
-    N = 1
+    N = 500
     step = 1/N
     plotter.set_weights([normalized_random_direction],step=-step*N/2)
     
@@ -118,5 +118,5 @@ if __name__ == "__main__":
     for i in range(N):
         plotter.set_weights([normalized_random_direction], step=step)
         avg_loss = trainer.self_evaluate()
-        with open("result_1.csv","ab") as f:
+        with open("result_500.csv","ab") as f:
             np.savetxt(f, [avg_loss], comments="")
