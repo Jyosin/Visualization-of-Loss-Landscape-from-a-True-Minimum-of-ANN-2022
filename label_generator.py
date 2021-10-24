@@ -28,7 +28,7 @@ def generate_label_for_data(model, dataset, filename='./labeled.csv'):
                 comments="",delimiter=',')
 
 if __name__ == "__main__":
-    dnn = DNN()
-    dataset = read_data_from_csv()
+    dnn = DNN(units=[64,16,1],activactions=['tanh','tanh','tanh'])
+    dataset = read_data_from_csv(filename="uniform.csv",filepath="./")
     dataset = iter(dataset)
     generate_label_for_data(dnn, dataset)

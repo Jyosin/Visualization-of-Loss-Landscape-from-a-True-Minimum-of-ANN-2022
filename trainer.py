@@ -3,6 +3,7 @@ import os
 
 from models import DNN 
 from data_generator import read_data_from_csv
+from plotter import Plotter
 
 class Trainer:
     def __init__(self, args) :
@@ -100,13 +101,32 @@ class Trainer:
         filepath = os.path.join(filepath,str(num)+'/')
 
         if os.path.exists(filepath):
-            import pdb
-            pdb.set_trace()
+            # import pdb
+            # pdb.set_trace()
             self.just_build()
             self.model.load_weights(filepath+name)
             print("model load from {}".format(filepath+name))
         else:
             print("path dosen't exits.")
+
+    def evaluate(self):
+        iter_test = iter(self.dataset)
+        self.metric.reset_states()
+
+        while True:
+            try:
+                x = iter_test.get_next()
+            except:
+                print("run out of data. ")
+                break
+            x['x'] = tf.reshape(x['x'],(-1,1))
+            prediction = self.model(x['x'])
+            loss = self.loss(prediction,x['y'])
+            self.metric.update_state(loss)
+        
+        avg_loss = self.metric.result().numpy()
+        print("Avg loss", avg_loss)
+        return avg_loss
 
 if __name__ == "__main__":
     trainer_args = {'loss':{'name':'mse'},
@@ -117,10 +137,15 @@ if __name__ == "__main__":
                              'activations':['tanh','tanh','tanh']}, }
     
     trainer = Trainer(trainer_args)
-    # trainer.just_build()
-    
-    # trainer.save_model_weights()
+    trainer.just_build()
+    trainer.model.summar()
 
-    # trainer.save_model_weights()
-    trainer.load_model_weights()
-    
+    avg_loss = trainer.self_eveluate()
+    print(avg_loss)
+
+    plotter = Plotter(trainer.model)
+    normalized_random_direction = plotter.xreate_random_direction(norm = 'layer')
+    plotter.set_weights([normalized_random_direction], step=0.5)
+
+    # avg_loss = trainer.self_evaluate()
+    # print(avg_loss)    
