@@ -3,7 +3,7 @@ import os
 
 from models import DNN 
 from data_generator import read_data_from_csv
-from plotter import Plotter
+
 
 class Trainer:
     def __init__(self, args) :
