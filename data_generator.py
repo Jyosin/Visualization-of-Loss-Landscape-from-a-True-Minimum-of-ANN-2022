@@ -4,7 +4,7 @@ import csv
 import os
 
 def uniform_generator(range, n = 1000000):
-    x = tf.random.uniform(shape=[n], minval=range[0] , maxval=range[1],seed = 9527)
+    x = tf.random.uniform(shape=[n], minval=range[0] , maxval=range[1],seed = 10000)
     return x
 
 def save_data_to_csv(data, filename='uniform.csv',filepath='./'):
