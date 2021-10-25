@@ -17,6 +17,8 @@ class Trainer:
 
     def _build_dataset(self, dataset_args) :
         if dataset_args['name'] == 'uniform':
+            self.x_v = None
+            self.y_v = None
             dataset = read_data_from_csv(filename='labeled.csv',
                                          filepath='./',
                                          batch_size=dataset_args['batch_size'],
@@ -172,7 +174,7 @@ if __name__ == "__main__":
     
     trainer = Trainer(trainer_args)
     trainer.load_model_weights()
-    
+
     # trainer.just_build()
     # trainer.model.summar()
 
