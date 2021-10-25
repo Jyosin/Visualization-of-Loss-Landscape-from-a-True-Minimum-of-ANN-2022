@@ -27,6 +27,11 @@ class Trainer:
 
         return dataset
 
+    def _build_envs(self):
+        physical_devices = tf.config.list_physical_devices('GPU')
+        for item in physical_devices:
+            tf.config.experimental.set_memory_growth(item,True)
+
     def _build_model(self, model_args) :
         if model_args['name'] == 'DNN':
             model = DNN(units=model_args['units'],
@@ -62,7 +67,7 @@ class Trainer:
         self.optimizer.apply_gradients(zip(grad,self.model.trainable_variables))
         self.metric.update_state(loss)
 
-        return loss
+        
 
     def valid_step(self,x):
         inputs = x['x']
@@ -108,7 +113,32 @@ class Trainer:
             print("model load from {}".format(filepath+name))
         else:
             print("path dosen't exits.")
+    def uniform_self_evaluate(self):
+        iter_test =iter(self.dataset)
+        self.metric.reset_states()
+        all_x =[]
+        all_y =[]
+        if self.x_v == None or self.y_v== None:
+            while True:
+                try:
+                    x= iter_test.get_next()
+                    x['x'] = tf.reshape(x['x'],(-1,1))
+                    x['y'] = tf.reshape(x['y'],(-1,1))
+                    all_x.append(x['x'])
+                    all_y.append(x['y'])
+                except:
+                    print("run out of data")
+                    break
+            self.x_v = tf.concat(all_x, axis=0)
+            self.y_v = tf.concat(all_y, axis=0)
 
+        prediction = self.model(self.x_v)
+        loss = self.loss(prediction, self.y_v)
+        self.metric.update_state(loss)
+
+        avg_loss = self.metric.result().numpy()
+        print("Avg loss", avg_loss)
+        return avg_loss
     def self_evaluate(self):
         iter_test = iter(self.dataset)
         self.metric.reset_states()
@@ -141,15 +171,17 @@ if __name__ == "__main__":
                              'activations':['tanh','tanh','tanh']}, }
     
     trainer = Trainer(trainer_args)
-    trainer.just_build()
-    trainer.model.summar()
+    trainer.load_model_weights()
+    
+    # trainer.just_build()
+    # trainer.model.summar()
 
-    avg_loss = trainer.self_eveluate()
-    print(avg_loss)
+    # avg_loss = trainer.self_eveluate()
+    # print(avg_loss)
 
-    plotter = Plotter(trainer.model)
-    normalized_random_direction = plotter.xreate_random_direction(norm = 'layer')
-    plotter.set_weights([normalized_random_direction], step=0.5)
+    # plotter = Plotter(trainer.model)
+    # normalized_random_direction = plotter.xreate_random_direction(norm = 'layer')
+    # plotter.set_weights([normalized_random_direction], step=0.5)
 
     # avg_loss = trainer.self_evaluate()
     # print(avg_loss)    s
