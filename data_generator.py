@@ -10,9 +10,6 @@ def uniform_generator(range, n = 1000000):
 def save_data_to_csv(data, filename='uniform.csv',filepath='./'):
     file = os.path.join(filepath,filename)
     np_data = data.numpy()
-    with open(file=file,mode='w')as f:
-        f_writer = csv.writer(f,delimiter=',')
-        f_writer.writerow(['x'])
     np.savetxt(file,np_data,header='x',comments="")
 
 def read_data_from_csv(filename='uniform.csv',
@@ -25,11 +22,16 @@ def read_data_from_csv(filename='uniform.csv',
                                                     batch_size=batch_size,
                                                     column_names=CSV_COLUMNS,
                                                     shuffle=False,
-                                                    num_epochs=num_epochss)
+                                                    num_epochs=num_epochs)
     return dataset
 
 if __name__ == "__main__":
-    # data = uniform_generator(range=[-1.0,1.0])
-    # print(data)
-    # save_data_to_csv(data)
+    data = uniform_generator(range=[-1.0,1.0])
+    print(data)
+    save_data_to_csv(data)
+
     dataset = read_data_from_csv()
+    ds = iter(dataset)
+    inputs = ds.get_next()
+    inputs['x']
+   # 
