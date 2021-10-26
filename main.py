@@ -14,25 +14,30 @@ if __name__ == "__main__":
                     'optimizer':{'name':'SGD','learning_rate':0.001},
                     'dataset':{'name':'uniform','batch_size':100,'epoch':1},
                     'model':{'name':'DNN','units':[64,16,1],
-                             'activations':['tanh','tanh','tanh']}, }
+                             'activations':['tanh','tanh','tanh']},'fuse_model':None }
     trainer = Trainer(trainer_args)
     trainer.just_build()
     trainer.model.summary()
+    trainer.uniform_self_evaluate()
 
-    plotter = Plotter(trainer.model)
-    normlized_random_direction = plotter.creat_random_direction(norm='layer')
+    # plotter_args ={''
 
-    N = 1000
-    step = 1/100
+    # }
 
-    plotter.set_weights([normlized_random_direction], step=-step+N/2)
+    # plotter = Plotter(trainer.model)
+    # normlized_random_direction = plotter.creat_random_direction(norm='layer')
 
-    start_time = time.time()
-    for i in range(N):
-        plotter.set_weights([normlized_random_direction], step)
-        avg_loss = trainer.uniform_self_evaluate()
-        with open("result_10000.csv", "ab")as f:
-            np.savetxt(f, [avg_loss], comments="")
-        end_time = time.time()
-        print("total time{}".format(end_time-start_time))
+    # N = 1000
+    # step = 1/100
+
+    # plotter.set_weights([normlized_random_direction], step=-step+N/2)
+
+    # start_time = time.time()
+    # for i in range(N):
+    #     plotter.set_weights([normlized_random_direction], step)
+    #     avg_loss = trainer.uniform_self_evaluate()
+    #     with open("result_10000.csv", "ab")as f:
+    #         np.savetxt(f, [avg_loss], comments="")
+    #     end_time = time.time()
+    #     print("total time{}".format(end_time-start_time))
                             

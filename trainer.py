@@ -115,32 +115,35 @@ class Trainer:
             print("model load from {}".format(filepath+name))
         else:
             print("path dosen't exits.")
-    def uniform_self_evaluate(self):
+
+    def uniform_self_evaluate(self, percent=20):
+
         iter_test =iter(self.dataset)
         self.metric.reset_states()
+        
         all_x =[]
         all_y =[]
         if self.x_v == None or self.y_v== None:
-            while True:
+            while True and percent != 0:
                 try:
                     x= iter_test.get_next()
                     x['x'] = tf.reshape(x['x'],(-1,1))
                     x['y'] = tf.reshape(x['y'],(-1,1))
                     all_x.append(x['x'])
                     all_y.append(x['y'])
+                    percent -= 1
                 except:
                     print("run out of data")
                     break
             self.x_v = tf.concat(all_x, axis=0)
             self.y_v = tf.concat(all_y, axis=0)
 
-        prediction = self.model(self.x_v)
-        loss = self.loss(prediction, self.y_v)
-        self.metric.update_state(loss)
+        avg_loss = self.evaluate_in_all(self.x_v, self.y_v)
 
-        avg_loss = self.metric.result().numpy()
+        np_avg_loss = avg_loss.numpy()
         print("Avg loss", avg_loss)
-        return avg_loss
+        return np_avg_loss
+
     def self_evaluate(self):
         iter_test = iter(self.dataset)
         self.metric.reset_states()
