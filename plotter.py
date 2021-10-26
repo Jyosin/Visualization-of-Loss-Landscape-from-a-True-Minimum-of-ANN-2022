@@ -6,13 +6,27 @@ import tensorflow as tf
 from trainer import Trainer
 
 class Plotter:
-    def __init__(self, model):
+    def __init__(self, plotter_args, model):
+        self.step = plotter_args['step']
+        self.num_evaluate = plotter_args['num_evaluate']
+        self.fuse_models = plotter_args['fuse_models']
         self.model = model
-
 
     def get_weights(self):
         return self.model.trainable_weights
     
+    def fuse_direction(self,normalized_directions,init_fuse= False):
+        random_directions= []
+        for d in normalized_directions:
+            fuse_random_direction =[]
+            for i in range(self.fuse_models):
+                if init_fuse == True:
+                    fuse_random_direction.append(d)
+                else:
+                    fuse_random_direction.append(d*(i+1))
+            random_directions.append(tf.stack(fuse_random_direction))
+        return random_directions
+
     def set_weights(self,directions=None, step=None):
         #l(alpha * theta + (1- alpha)* theta')=> L(theta + alpha *(theta-theta'))
         #l(theta + alpha * theta_1 + beta * theta_2)
@@ -33,7 +47,15 @@ class Plotter:
             weight.assign_add(change)
 
     def get_random_weights(self,weights):
-        return [tf.random.normal(w.shape)for w in weights]
+        if self.fuse_directionfuse_models == None:
+            return [tf.random.normal(w.shape)for w in weights]
+        else:
+            single_random_direction = []
+            for w in weights:
+                dims = list(w.shape)
+                single_random_direction.append(
+                    tf.random.normal(shape=dims[1:]))
+            return single_random_direction
 
     def get_diff_weights(self, weights_1, weights_2):
         return [w2 - w1 for (w1, w2) in zip(weights_1, weights_2)]
@@ -70,7 +92,11 @@ class Plotter:
             else:
                 normalized_direction.append(
                     self.normalize_direction(d ,w, norm))
-        return normalized_direction
+        if self.fuse_models != None:
+            fused_normalized_direction = self.fuse_direction(
+                normalized_direction
+            )
+        return fused_normalized_direction, normalized_direction
 
     def create_target_direction(self):
         pass
@@ -93,30 +119,3 @@ class Plotter:
     def load_directions(self):
         pass
 
-if __name__ == "__main__":
-    trainer_args = {'loss':{'name':'mse'},
-                    'metric':{'name':'Mean'},
-                    'optimizer':{'name':'SGD','learning_rate':0.001},
-                    'dataset':{'name':'uniform','batch_size':100,'epoch':1},
-                    'model':{'name':'DNN','units':[64,16,1],
-                             'activations':['tanh','tanh','tanh']}, }
-
-    trainer = Trainer(trainer_args)
-    trainer.just_build()
-    trainer.model.summary()
-    # trainer.self_evaluate()
-
-    plotter = Plotter(trainer.model)
-    normalized_random_direction = plotter.creat_random_direction(norm='layer')
-
-    N = 500
-    step = 1/N
-    plotter.set_weights([normalized_random_direction],step=-step*N/2)
-    
-    # plotter.set_weights([normalized_random_direction], step=0.5)
-
-    for i in range(N):
-        plotter.set_weights([normalized_random_direction], step=step)
-        avg_loss = trainer.self_evaluate()
-        with open("result_500.csv","ab") as f:
-            np.savetxt(f, [avg_loss], comments="")
