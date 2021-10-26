@@ -27,27 +27,40 @@ class Plotter:
             random_directions.append(tf.stack(fuse_random_direction))
         return random_directions
 
-    def set_weights(self,directions=None, step=None):
+    def set_weights(self,directions=None, init_state = False, init_directions=None):
         #l(alpha * theta + (1- alpha)* theta')=> L(theta + alpha *(theta-theta'))
         #l(theta + alpha * theta_1 + beta * theta_2)
         #Each direction have same shape with trainable weights
         #)
-        if directions == None:
-            print("None of directions")
-        else:
-            if len(directions) == 2:
-                dx = directions[0]
-                dy = directions[1]
-                changes = [step[0]*d0 +step[1]*d1 for (d0, d1)in zip(dx, dy)]
+        if init_directions == True:
+            if len(init_directions)== 2:
+                pass
             else:
-                changes = [d*step for d in directions[0]]
+                shift = -self.step*self.num_evaluate / 2
+                shift = shift*self.fuse_models if self.fuse_models != None else shift
+                fused_init_direction = self.fuse_directions(init_directions, init_fuse=True)
+                changes = [d*shift for d in fused_init_direction]
+        else:
+            if self.fuse_models == None:
+                if len(directions) == 2:
+                    dx = directions[0]
+                    dy = directions[1]
+                    changes = [self.step[0]*d0 + self.step[1]*
+                                d1 for (d0, d1) in zip(dx, dy)]
+                else:
+                    changes = [d*self.step for d in directions[0]]
+            else:
+                if len(directions) == 2:
+                    pass
+                else:
+                    changes = [d*self.step * self.fuse_models for d in directions[0]]
 
         weights = self.get_weights()
-        for(weight,change) in zip(weights, changes):
+        for (weight, change) in zip(weights, changes):
             weight.assign_add(change)
-
+                        
     def get_random_weights(self,weights):
-        if self.fuse_directionfuse_models == None:
+        if self.fuse_models == None:
             return [tf.random.normal(w.shape)for w in weights]
         else:
             single_random_direction = []
