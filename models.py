@@ -1,5 +1,6 @@
 import tensorflow as tf
-from tensorflow import keras 
+from tensorflow import keras
+from tensorflow.python.ops.gen_array_ops import shape 
 from data_generator import read_data_from_csv
 
 class Linear(keras.layers.Layer):
@@ -26,15 +27,14 @@ class Linear(keras.layers.Layer):
             w_init = tf.random_normal_initializer(seed=10000)
             b_init = tf.zeros_initializer()
 
-            self.fuse_w = tf.Variable(
-                initial_value=w_init(
-                    shape=(input_shape[-1], self.units), dtype="float32"),
-                trainable=True, name="w"
-                )
-            self.b = tf.Variable(
-                initial_value=b_init(shape=(self.fuse_layers, 1, self.units), dtype="float32"), trainable=True,
-                name="b"
-            )
+            init_w = tf.stack(
+                [w_init(shape=(input_shape[-1], self.units), dtype="float32")] * self.fuse_layers)
+            init_b = tf.stack([b_init(
+                shape=(1, self.units), dtype="float32")] *self.fuse_layers)
+
+            self.fuse_w = tf.Variable(initial_value = init_w, trainable =True, name = "w")
+            self.fuse_b = tf.Variable(initial_value = init_b, trainable=True,  name="b")        
+                
             
 
     def call(self, inputs):
