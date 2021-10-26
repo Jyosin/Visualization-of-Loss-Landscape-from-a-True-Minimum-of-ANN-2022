@@ -34,7 +34,7 @@ if __name__ == "__main__":
     for i in range(plotter.num_evaluate):
         plotter.set_weights(directions=[fused_direction])
         avg_loss = trainer.uniform_self_evaluate()
-        with open("result_10000.csv", "ab")as f:
+        with open("result_10000_0.csv", "ab")as f:
             np.savetxt(f, avg_loss, comments="")
         end_time = time.time()
         print("total time{}".format(end_time-start_time))
