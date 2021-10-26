@@ -32,7 +32,7 @@ class Plotter:
         #l(theta + alpha * theta_1 + beta * theta_2)
         #Each direction have same shape with trainable weights
         #)
-        if init_directions == True:
+        if init_state == True:
             if len(init_directions)== 2:
                 pass
             else:
@@ -114,7 +114,7 @@ class Plotter:
     def create_target_direction(self):
         pass
 
-    def creat_random_direction(self, ignore='bias_bn', norm='filter'):
+    def create_random_direction(self, ignore='bias_bn', norm='filter'):
         weights = self.get_weights()
         direction = self.get_random_weights(weights)
         direction = self.normalize_directions_for_weights(

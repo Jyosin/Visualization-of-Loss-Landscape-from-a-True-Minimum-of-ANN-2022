@@ -26,7 +26,7 @@ if __name__ == "__main__":
 
     plotter = Plotter(plotter_args, trainer.model)
 
-    fused_direction, normlized_direction = plotter.creat_random_direction(
+    fused_direction, normlized_direction = plotter.create_random_direction(
         norm='layer')
     plotter.set_weights(init_state=True, init_directions=normlized_direction)
 
