@@ -21,9 +21,9 @@ class Plotter:
             fuse_random_direction =[]
             for i in range(self.fuse_models):
                 if init_fuse == True:
-                    fuse_random_direction.append(d)
+                    fuse_random_direction.append(d*(self.fuse_models-i)*self.step)
                 else:
-                    fuse_random_direction.append(d*(i+1))
+                    fuse_random_direction.append(d)
             random_directions.append(tf.stack(fuse_random_direction))
         return random_directions
 
@@ -58,7 +58,7 @@ class Plotter:
         weights = self.get_weights()
         for (weight, change) in zip(weights, changes):
             weight.assign_add(change)
-                        
+
     def get_random_weights(self,weights):
         if self.fuse_models == None:
             return [tf.random.normal(w.shape)for w in weights]
