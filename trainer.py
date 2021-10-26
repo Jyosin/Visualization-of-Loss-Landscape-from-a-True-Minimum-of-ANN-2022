@@ -116,6 +116,16 @@ class Trainer:
         else:
             print("path dosen't exits.")
 
+    def evalutate_in_all(self, inputs, labels):
+        prediction = self.model(inputs)
+        loss = self.loss(prediction, labels)
+        if self.args['model']['fuse_models'] == None:
+            self.metric.update_state(loss)
+            avg_loss = self.metric.result()
+        else:
+            avg_loss = tf.reduce_mean(loss, axis=-1)
+        return avg_loss
+        
     def uniform_self_evaluate(self, percent=20):
 
         iter_test =iter(self.dataset)
@@ -144,15 +154,7 @@ class Trainer:
         print("Avg loss", avg_loss)
         return np_avg_loss
 
-    def evalutate_in_all(self, inputs, labels):
-        prediction = self.model(inputs)
-        loss = self.loss(prediction, labels)
-        if self.args['model']['fuse_models'] == None:
-            self.metric.update_state(loss)
-            avg_loss = self.metric.result()
-        else:
-            avg_loss = tf.reduce_mean(loss, axis=-1)
-        return avg_loss
+
 
     def self_evaluate(self):
         iter_test = iter(self.dataset)
