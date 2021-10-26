@@ -38,11 +38,11 @@ class Linear(keras.layers.Layer):
             
 
     def call(self, inputs):
-        if self.fuse_models == None:
-            output = tf.matmul(inputs,self.w)+ self.b
+        if self.fuse_layers == None:
+            outputs = tf.matmul(inputs,self.w)+ self.b
         else:
-            pass
-        return output
+            outputs = tf.matmul(inputs, self.fuse_w) + self.fuse_b
+        return outputs
 
 class DNN(tf.keras.Model):
     def __init__(self,
