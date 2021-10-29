@@ -18,8 +18,8 @@ if __name__ == "__main__":
     trainer = Trainer(trainer_args)
     trainer.just_build()
     trainer.model.summary()
-    import pbd
-    pbd.set_trace()
+    import pdb
+    pdb.set_trace()
     trainer.uniform_self_evaluate()
 
     plotter_args ={'num_evaluate': 10,
