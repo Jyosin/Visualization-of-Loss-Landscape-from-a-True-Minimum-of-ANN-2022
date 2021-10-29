@@ -2,7 +2,7 @@ import os
 import h5py
 import numpy as np
 import tensorflow as tf
-
+import time
 from trainer import Trainer
 
 class Plotter:
@@ -116,7 +116,7 @@ class Plotter:
                     self.normalize_direction(d ,w, norm))
         fused_normalized_direction = []
         if self.fuse_models != None:
-            fused_normalized_direction = self.fuse_direction(
+            fused_normalized_direction = self.fuse_directions(
                 normalized_direction
             )
         return fused_normalized_direction, normalized_direction
@@ -141,4 +141,18 @@ class Plotter:
 
     def load_directions(self):
         pass
+    
+    def plot_1d_loss(self, trainer, save_csv="./result.csv"):
+        fused_direction, normlized_direction = self.create_random_direction(
+            norm='layer')
+        self.set_weights(init_state=True, init_directions=normlized_direction)
 
+        start_time = time.time()
+        for i in range(self.num_evaluate):
+            self.set_weights(directions=[fused_direction])
+            avg_loss = trainer.uniform_self_evaluate()
+            with open("result_10000_0.csv", "ab")as f:
+                np.savetxt(f, avg_loss, comments="")
+        end_time = time.time()
+        print("total time {}".format(end_time-start_time))
+                            

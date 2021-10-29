@@ -14,7 +14,7 @@ if __name__ == "__main__":
                     'optimizer':{'name':'SGD','learning_rate':0.001},
                     'dataset':{'name':'uniform','batch_size':100,'epoch':1},
                     'model':{'name':'DNN','units':[64,16,1],
-                             'activations':['tanh','tanh','tanh'],'fuse_models':None} }
+                             'activations':['tanh','tanh','tanh'],'fuse_models':10} }
     trainer = Trainer(trainer_args)
     trainer.just_build()
     trainer.model.summary()
@@ -26,16 +26,5 @@ if __name__ == "__main__":
 
     plotter = Plotter(plotter_args, trainer.model)
 
-    fused_direction, normlized_direction = plotter.create_random_direction(
-        norm='layer')
-    plotter.set_weights(init_state=True, init_directions=normlized_direction)
-
-    start_time = time.time()
-    for i in range(plotter.num_evaluate):
-        plotter.set_weights(directions=[normlized_direction])
-        avg_loss = trainer.uniform_self_evaluate()
-        with open("result_10000_0.csv", "ab")as f:
-            np.savetxt(f, avg_loss, comments="")
-    end_time = time.time()
-    print("total time {}".format(end_time-start_time))
+    plotter.plot_1d_loss(trainer=trainer)
                             

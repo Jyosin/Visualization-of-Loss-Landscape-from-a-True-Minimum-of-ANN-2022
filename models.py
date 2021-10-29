@@ -61,7 +61,7 @@ class DNN(tf.keras.Model):
     def _build_fc(self):
         layers = []
         for units in self.units:
-            layers.append(Linear(units=units))
+            layers.append(Linear(units=units,fuse_layers=self.fuse_models))
         return layers
 
     def _build_act(self):

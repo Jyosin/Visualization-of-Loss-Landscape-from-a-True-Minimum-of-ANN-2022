@@ -37,7 +37,8 @@ class Trainer:
     def _build_model(self, model_args) :
         if model_args['name'] == 'DNN':
             model = DNN(units=model_args['units'],
-                            activactions=model_args['activations'])
+                            activactions=model_args['activations'],
+                            fuse_models=model_args['fuse_models'])
         else:
             model = None
         return model
