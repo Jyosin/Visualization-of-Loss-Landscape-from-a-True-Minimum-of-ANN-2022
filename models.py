@@ -1,6 +1,5 @@
 import tensorflow as tf
 from tensorflow import keras
-from tensorflow.python.ops.gen_array_ops import shape 
 from data_generator import read_data_from_csv
 
 class Linear(keras.layers.Layer):

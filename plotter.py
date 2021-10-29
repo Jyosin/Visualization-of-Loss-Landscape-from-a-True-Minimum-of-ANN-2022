@@ -11,6 +11,10 @@ class Plotter:
         self.num_evaluate = plotter_args['num_evaluate']
         self.fuse_models = plotter_args['fuse_models']
         self.model = model
+        self.init_weights = [tf.convert_to_tensor(w)for w in self.model.trainable_weights]
+
+    def get_init_weights(self):
+        return self.init_weights
 
     def get_weights(self):
         return self.model.trainable_weights
@@ -21,52 +25,53 @@ class Plotter:
             fuse_random_direction =[]
             for i in range(self.fuse_models):
                 if init_fuse == True:
-                    fuse_random_direction.append(d*(self.fuse_models-i)*self.step)
+                    fuse_random_direction.append(d*(i*1))
                 else:
                     fuse_random_direction.append(d)
             random_directions.append(tf.stack(fuse_random_direction))
         return random_directions
 
-    def set_weights(self,directions=None, init_state = False, init_directions=None):
+    def set_weights(self,directions=None, step = 0,init_state = False, init_directions=None):
         #l(alpha * theta + (1- alpha)* theta')=> L(theta + alpha *(theta-theta'))
         #l(theta + alpha * theta_1 + beta * theta_2)
         #Each direction have same shape with trainable weights
         #)
-        if init_state == True:
-            if len(init_directions)== 2:
+        # if init_state == True:
+        #     if len(init_directions)== 2:
+        #         pass
+        #     else:
+        #         shift = -self.step*self.num_evaluate / 2
+        #         shift = shift*self.fuse_models if self.fuse_models != None else shift
+        #         if self.fuse_models != None:
+        #             init_base_direction = self.fuse_directions(init_directions)
+        #             init_shift_direction = self.fuse_directions(init_directions, init_fuse=True)
+        #             changes_base =[d*shift for d in init_base_direction]
+        #             changes_shift = [d*self.step for d in init_shift_direction]
+        #             changes = []
+        #             for (shift,base) in zip(changes_shift, changes_base):
+        #                 changes.append(shift+base)
+        #         else:
+        #             changes=[d *shift for d in init_directions]
+         
+        # else:
+        if self.fuse_models == None:
+            if len(directions) == 2:
+                dx = directions[0]
+                dy = directions[1]
+                changes = [self.step[0]*d0 + step[1]*
+                            d1 for (d0, d1) in zip(dx, dy)]
+            else:
+                changes = [d*step for d in directions[0]]
+        else:
+            if len(directions) == 2:
                 pass
             else:
-                shift = -self.step*self.num_evaluate / 2
-                shift = shift*self.fuse_models if self.fuse_models != None else shift
-                if self.fuse_models != None:
-                    init_base_direction = self.fuse_directions(init_directions)
-                    init_shift_direction = self.fuse_directions(init_directions, init_fuse=True)
-                    changes_base =[d*shift for d in init_base_direction]
-                    changes_shift = [d*self.step for d in init_shift_direction]
-                    changes = []
-                    for (shift,base) in zip(changes_shift, changes_base):
-                        changes.append(shift+base)
-                else:
-                    changes=[d *shift for d in init_directions]
-         
-        else:
-            if self.fuse_models == None:
-                if len(directions) == 2:
-                    dx = directions[0]
-                    dy = directions[1]
-                    changes = [self.step[0]*d0 + self.step[1]*
-                                d1 for (d0, d1) in zip(dx, dy)]
-                else:
-                    changes = [d*self.step for d in directions[0]]
-            else:
-                if len(directions) == 2:
-                    pass
-                else:
-                    changes = [d*self.step * self.fuse_models for d in directions[0]]
+                changes = [d*step * self.fuse_models for d in directions[0]]
 
-        weights = self.get_weights()
-        for (weight, change) in zip(weights, changes):
-            weight.assign_add(change)
+        init_weights = self.get_init_weights()
+        trainable_variable = self.get_weights()
+        for (i_w, w, change) in zip(init_weights, trainable_variable, changes):
+            w.assign(i_w+change)
 
     def get_random_weights(self,weights):
         if self.fuse_models == None:
@@ -143,16 +148,39 @@ class Plotter:
         pass
     
     def plot_1d_loss(self, trainer, save_csv="./result.csv"):
-        fused_direction, normlized_direction = self.create_random_direction(
-            norm='layer')
-        self.set_weights(init_state=True, init_directions=normlized_direction)
+        fused_direction, _ = self.create_random_direction( norm='layer')
+        directions = fused_direction
 
         start_time = time.time()
+
         for i in range(self.num_evaluate):
-            self.set_weights(directions=[fused_direction])
+            step = self.step*(i-self.num_evaluate/2)
+            # self.set_weights(directions=[directions],step=step)
             avg_loss = trainer.uniform_self_evaluate()
-            with open("result_10000_0.csv", "ab")as f:
+            with open("save_csv.csv", "ab")as f:
                 np.savetxt(f, avg_loss, comments="")
         end_time = time.time()
         print("total time {}".format(end_time-start_time))
                             
+    def plot_2d_loss(self, trainer, save_csv="./result2d.csv"):
+
+        fused_direction_x = self.create_random_direction(
+            norm='layer')
+        fused_direction_y = self.create_random_direction(
+            norm='layer')
+
+        directions = [fused_direction_x,fused_direction_y]
+        start_time = time.time()
+
+        for i in range (self.num_evaluate[0]):
+            for j in range(self.num_evaluate):
+                x_shift = self.step[0]*(i-self.num_evaluate[0]/2)
+                y_shift = self.step[1]*(j-self.num_evaluate[1]/2)
+                step = [x_shift, y_shift]
+                self.set_weights(directions=directions, step = step)
+                avg_loss =trainer.uniform_self_evaluate()
+                with open(save_csv,"ab") as f:
+                    np.savetxt(f, avg_loss, comments="")
+
+        end_time = time.time()
+        print("total time {}".format(end_time-start_time))

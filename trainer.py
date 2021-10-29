@@ -190,16 +190,3 @@ if __name__ == "__main__":
     
     trainer = Trainer(trainer_args)
     trainer.load_model_weights()
-
-    # trainer.just_build()
-    # trainer.model.summar()
-
-    # avg_loss = trainer.self_eveluate()
-    # print(avg_loss)
-
-    # plotter = Plotter(trainer.model)
-    # normalized_random_direction = plotter.xreate_random_direction(norm = 'layer')
-    # plotter.set_weights([normalized_random_direction], step=0.5)
-
-    # avg_loss = trainer.self_evaluate()
-    # print(avg_loss)    s
