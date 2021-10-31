@@ -14,18 +14,24 @@ if __name__ == "__main__":
                     'optimizer':{'name':'SGD','learning_rate':0.001},
                     'dataset':{'name':'uniform','batch_size':100,'epoch':1},
                     'model':{'name':'DNN','units':[64,16,1],
-                             'activations':['tanh','tanh','tanh'],'fuse_models':1} }
+                             'activations':['tanh','tanh','tanh'],'fuse_models':1000} }
     trainer = Trainer(trainer_args)
     trainer.just_build()
     trainer.model.summary()
-    import pdb
-    pdb.set_trace()
-    trainer.uniform_self_evaluate()
+  
+    # trainer.uniform_self_evaluate()
 
-    plotter_args ={'num_evaluate': 10,
-                    'step': 1/10,
-                    'fuse_models': trainer_args['model']['fuse_models']}
+    # plotter_args ={'num_evaluate': 10,
+    #                 'step': 1/10,
+    #                 'fuse_models': trainer_args['model']['fuse_models']}
 
-    plotter = Plotter(plotter_args, trainer.model)
-    plotter.plot_1d_loss(trainer=trainer)
+    # plotter = Plotter(plotter_args, trainer.model)
+    # plotter.plot_1d_loss(trainer=trainer)
     
+    plotter_args = {'num_evaluate' : [1000, 1],
+                    'step':[1e-3,1e-3],
+                    'fuse_models': trainer_args['model']['fuse_models'],
+                    }
+    plotter = Plotter(plotter_args, trainer.model)
+    
+    plotter.plot_2d_loss(trainer=trainer)

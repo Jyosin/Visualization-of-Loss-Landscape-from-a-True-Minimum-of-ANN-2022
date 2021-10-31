@@ -23,7 +23,7 @@ class Linear(keras.layers.Layer):
             )
         else:
             
-            w_init = tf.random_normal_initializer(seed=10000)
+            w_init = tf.random_normal_initializer(seed=100000)
             b_init = tf.zeros_initializer()
 
             init_w = tf.stack(

@@ -128,7 +128,8 @@ class Trainer:
         return avg_loss
 
     def uniform_self_evaluate(self, percent=20):
-
+        # import pdb
+        # pdb.set_trace()
         iter_test =iter(self.dataset)
         self.metric.reset_states()
         
