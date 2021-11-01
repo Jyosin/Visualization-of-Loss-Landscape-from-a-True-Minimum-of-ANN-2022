@@ -17,6 +17,8 @@ class Trainer:
 
     def _build_dataset(self, dataset_args) :
         if dataset_args['name'] == 'uniform':
+            self.x_v = None
+            self.y_v = None
             dataset = read_data_from_csv(filename='labeled.csv',
                                          filepath='./',
                                          batch_size=dataset_args['batch_size'],
@@ -27,10 +29,16 @@ class Trainer:
 
         return dataset
 
+    def _build_envs(self):
+        physical_devices = tf.config.list_physical_devices('GPU')
+        for item in physical_devices:
+            tf.config.experimental.set_memory_growth(item,True)
+
     def _build_model(self, model_args) :
         if model_args['name'] == 'DNN':
             model = DNN(units=model_args['units'],
-                            activactions=model_args['activations'])
+                            activactions=model_args['activations'],
+                            fuse_models=model_args['fuse_models'])
         else:
             model = None
         return model
@@ -62,7 +70,7 @@ class Trainer:
         self.optimizer.apply_gradients(zip(grad,self.model.trainable_variables))
         self.metric.update_state(loss)
 
-        return loss
+        
 
     def valid_step(self,x):
         inputs = x['x']
@@ -109,6 +117,47 @@ class Trainer:
         else:
             print("path dosen't exits.")
 
+    def evaluate_in_all(self, inputs, labels):
+        prediction = self.model(inputs)
+        loss = self.loss(prediction, labels)
+        if self.args['model']['fuse_models'] == None:
+            self.metric.update_state(loss)
+            avg_loss = self.metric.result()
+        else:
+            avg_loss = tf.reduce_mean(loss, axis=-1)
+        return avg_loss
+
+    def uniform_self_evaluate(self, percent=20):
+        # import pdb
+        # pdb.set_trace()
+        iter_test =iter(self.dataset)
+        self.metric.reset_states()
+        
+        all_x =[]
+        all_y =[]
+        if isinstance(self.x_v,type(None)):
+            while True and percent != 0:
+                try:
+                    x= iter_test.get_next()
+                    x['x'] = tf.reshape(x['x'],(-1,1))
+                    x['y'] = tf.reshape(x['y'],(-1,1))
+                    all_x.append(x['x'])
+                    all_y.append(x['y'])
+                    percent -= 1
+                except:
+                    print("run out of data")
+                    break
+            self.x_v = tf.concat(all_x, axis=0)
+            self.y_v = tf.concat(all_y, axis=0)
+
+        avg_loss = self.evaluate_in_all(self.x_v, self.y_v)
+        avg_loss = tf.reshape(avg_loss, shape=(-1,1))
+        np_avg_loss = avg_loss.numpy()
+        print("Avg loss", np_avg_loss)
+        return np_avg_loss
+
+
+
     def self_evaluate(self):
         iter_test = iter(self.dataset)
         self.metric.reset_states()
@@ -141,15 +190,4 @@ if __name__ == "__main__":
                              'activations':['tanh','tanh','tanh']}, }
     
     trainer = Trainer(trainer_args)
-    trainer.just_build()
-    trainer.model.summar()
-
-    avg_loss = trainer.self_eveluate()
-    print(avg_loss)
-
-    plotter = Plotter(trainer.model)
-    normalized_random_direction = plotter.xreate_random_direction(norm = 'layer')
-    plotter.set_weights([normalized_random_direction], step=0.5)
-
-    # avg_loss = trainer.self_evaluate()
-    # print(avg_loss)    s
+    trainer.load_model_weights()
