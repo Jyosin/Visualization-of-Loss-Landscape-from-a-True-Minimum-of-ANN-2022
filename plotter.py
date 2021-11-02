@@ -169,11 +169,11 @@ class Plotter:
         print("total time {}".format(end_time-start_time))
 
     def run(self) : 
-        try:
-            if self.args["task"] == "1d":
-                self.plot_1d_loss(save_csv=self.args['save_csv'])
-            elif self.args["task"] == "2d":
-                self.plot_2d_loss(save_csv=self.args['save_csv'])
-        except:
-            print("No such task.")
-            exit(1)
+        # try:
+        if self.args["task"] == "1d":
+            self.plot_1d_loss(save_csv=self.args['save_csv'])
+        elif self.args["task"] == "2d":
+            self.plot_2d_loss(save_csv=self.args['save_csv'])
+        # except:
+        #     print("No such task.")
+        #     exit(1)
