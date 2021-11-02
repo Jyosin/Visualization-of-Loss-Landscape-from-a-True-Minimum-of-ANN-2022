@@ -20,4 +20,4 @@ def get_yml_content(file_path):
 
 def print_error(*content):
     '''Print error informaation to screen'''
-    print(Fore.RED * ERROR_INFO + ' '.join([str(c) for c in content]) + Fore.RESET)
+    print(Fore.RED +  ERROR_INFO + ' '.join([str(c) for c in content]) + Fore.RESET)
