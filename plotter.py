@@ -6,11 +6,13 @@ import time
 from trainer import Trainer
 
 class Plotter:
-    def __init__(self, plotter_args, model):
+    def __init__(self, plotter_args, trainer):
+        self.args = plotter_args
         self.step = plotter_args['step']
         self.num_evaluate = plotter_args['num_evaluate']
-        self.fuse_models = plotter_args['fuse_models']
-        self.model = model
+        self.fuse_models = trainer.args['model']['fuse_models']
+        self.trainer = trainer
+        self.model = trainer.model
         self.init_weights = [tf.convert_to_tensor(w)for w in self.model.trainable_weights]
 
     def get_init_weights(self):
@@ -129,7 +131,7 @@ class Plotter:
     def load_directions(self):
         pass
     
-    def plot_1d_loss(self, trainer, save_csv="./result.csv"):
+    def plot_1d_loss(self, save_csv="./result.csv"):
         fused_direction, _ = self.create_random_direction( norm='layer')
         directions = fused_direction
 
@@ -138,13 +140,13 @@ class Plotter:
         for i in range(self.num_evaluate):
             step = self.step*(i-self.num_evaluate/2)
             self.set_weights(directions=[directions],step=step)
-            avg_loss = trainer.uniform_self_evaluate()
+            avg_loss = self.trainer.uniform_self_evaluate()
             with open("save_csv.csv", "ab")as f:
                 np.savetxt(f, avg_loss, comments="")
         end_time = time.time()
         print("total time {}".format(end_time-start_time))
                             
-    def plot_2d_loss(self, trainer, save_csv="./result2d.csv"):
+    def plot_2d_loss(self, save_csv="./result2d.csv"):
 
         direction_x = self.create_random_direction(
             norm='layer')
@@ -159,9 +161,19 @@ class Plotter:
                 y_shift_step = self.step[1]*(j-self.num_evaluate[1]/2)
                 step = [x_shift_step, y_shift_step]
                 self.set_weights(directions=directions, step=step)
-                avg_loss = trainer.uniform_self_evaluate()
+                avg_loss = self.trainer.uniform_self_evaluate()
                 with open(save_csv,"ab") as f:
                     np.savetxt(f, avg_loss, comments="")
 
         end_time = time.time()
         print("total time {}".format(end_time-start_time))
+
+    def run(self) : 
+        try:
+            if self.args["task"] == "1d":
+                self.plot_1d_loss(save_csv=self.args['save_csv'])
+            elif self.args["task"] == "2d":
+                self.plot_2d_loss(save_csv=self.args['save_csv'])
+        except:
+            print("No such task.")
+            exit(1)

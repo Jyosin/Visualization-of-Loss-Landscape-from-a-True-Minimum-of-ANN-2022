@@ -19,7 +19,8 @@ class Trainer:
         if dataset_args['name'] == 'uniform':
             self.x_v = None
             self.y_v = None
-            dataset = read_data_from_csv(filename='labeled.csv',
+            path_to_data = dataset_args['path_to_data']
+            dataset = read_data_from_csv(filename=path_to_data,
                                          filepath='./',
                                          batch_size=dataset_args['batch_size'],
                                          CSV_COLUMNS=['x','y'],
