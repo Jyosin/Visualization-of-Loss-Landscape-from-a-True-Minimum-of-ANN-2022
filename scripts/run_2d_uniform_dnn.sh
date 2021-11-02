@@ -1,1 +1,1 @@
-python main.py --config ./2d_uniform_dnn.yaml
+python main.py --config="scripts/configs/2d_uniform_dnn.yaml"
