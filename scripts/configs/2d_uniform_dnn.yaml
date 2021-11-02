@@ -20,5 +20,5 @@ Trainer:
 Plotter:
   task : "2d"
   num_evaluate : [1000,1]
-  step : [1e-4, 1e-4]
-  save_csv: ./dataset/result/2d_uniform_1k1k_4_9.csv
+  step : [1e-5, 1e-5]
+  save_csv: ./dataset/result/2d_uniform_1k1k_5_0.csv
