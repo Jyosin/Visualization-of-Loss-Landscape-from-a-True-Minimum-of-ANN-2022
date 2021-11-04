@@ -50,7 +50,7 @@ class Plotter:
         else:
             dx = directions[0]
             changes = [d * step *
-                        self.fuse_models for d in dx]
+                        self.fuse_models for d in dx[1]]
 
         init_weights = self.get_init_weights()
         trainable_variables = self.get_weights()
