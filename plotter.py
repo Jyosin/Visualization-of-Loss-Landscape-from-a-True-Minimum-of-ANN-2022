@@ -185,13 +185,15 @@ class Plotter:
         print("total time {}".format(end_time-start_time))
 
     def run(self) : 
+
         try:
             if self.args["task"] == "1d":
-                self.plot_1d_loss(save_csv=self.args['save_csv'])
+                self.plot_1d_loss(save_csv=self.args['save_file'])
             elif self.args["task"] == "2d":
-                self.plot_2d_loss(save_csv=self.args['save_csv'])
+                self.plot_2d_loss(save_csv=self.args['save_file'])
             else:
                 print("No such task. ")
-        except:
+        except Exception as e:
             print("Task broken")
+            print(e)
             exit(1)
