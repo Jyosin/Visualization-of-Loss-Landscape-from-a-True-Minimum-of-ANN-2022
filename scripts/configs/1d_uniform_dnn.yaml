@@ -20,5 +20,6 @@ Trainer:
 Plotter:
   task : "1d"
   num_evaluate : 1000
-  step : [1e-3, 1e-3]
-  save_csv: ./dataset/result/1d_uniform_1k_1.csv
+  step : 1e-3
+  save_direction : True
+  save_csv: ./dataset/result/1d_uniform_dnn_1k
