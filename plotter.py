@@ -133,7 +133,7 @@ class Plotter:
     
     def plot_1d_loss(self, save_file="./result/1d"):
 
-        fused_direction, _ = self.create_random_direction( norm='layer')
+        fused_direction = self.create_random_direction( norm='layer')
         directions = fused_direction
 
 
@@ -149,7 +149,7 @@ class Plotter:
             step = self.step*(i-self.num_evaluate/2)
             self.set_weights(directions=[directions],step=step)
             avg_loss = self.trainer.uniform_self_evaluate()
-            with open("save_csv.csv", "ab")as f:
+            with open(path_to_csv, "ab")as f:
                 np.savetxt(f, avg_loss, comments="")
         end_time = time.time()
         print("total time {}".format(end_time-start_time))
