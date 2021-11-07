@@ -22,4 +22,4 @@ Plotter:
   num_evaluate : 1000
   step : 1e-3
   save_direction : True
-  save_csv: ./dataset/result/1d_uniform_dnn_1k
+  save_file: ./dataset/result/1d_uniform_dnn_1k
