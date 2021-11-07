@@ -15,11 +15,11 @@ Trainer:
     name: 'DNN'
     units: [64,16,1]
     activations: [tanh,tanh,tanh]
-    fuse_models: 1000
+    fuse_models: 100
 
 Plotter:
   task : "1d"
-  num_evaluate : 1000
+  num_evaluate : 10
   step : 1e-3
   save_direction : True
   save_file: ./dataset/result/1d_uniform_dnn_1k

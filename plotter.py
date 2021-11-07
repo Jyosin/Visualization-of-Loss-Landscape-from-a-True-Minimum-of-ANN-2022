@@ -49,8 +49,8 @@ class Plotter:
             changes =[x+y for (x,y)in zip(x_changes,y_changes)]
         else:
             dx = directions[0]
-            changes = [d * step *
-                        self.fuse_models for d in dx[1]]
+            changes = [d1 * step *
+                        self.fuse_models + d2 * self.step for (d1,d2) in zip(dx[0],dx[1])]
 
         init_weights = self.get_init_weights()
         trainable_variables = self.get_weights()
