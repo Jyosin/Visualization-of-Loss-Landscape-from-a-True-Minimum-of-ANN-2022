@@ -116,7 +116,7 @@ class Plotter:
 
     def create_random_direction(self,name="x", ignore='bias_bn', norm='filter'):
         weights = self.get_weights()
-        pdb.set_trace()
+        # pdb.set_trace()
 
         if not self.args["load_directions"]:
 
