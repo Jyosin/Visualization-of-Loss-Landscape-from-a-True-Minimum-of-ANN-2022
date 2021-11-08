@@ -22,4 +22,5 @@ Plotter:
   num_evaluate : 10
   step : 1e-3
   save_direction : True
+  load_direction : False
   save_file: ./dataset/result/1d_uniform_dnn_1k
