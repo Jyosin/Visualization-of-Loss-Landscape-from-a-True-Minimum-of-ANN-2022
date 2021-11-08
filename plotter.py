@@ -4,6 +4,7 @@ import numpy as np
 import tensorflow as tf
 import time
 from trainer import Trainer
+import pdb
 
 class Plotter:
     def __init__(self, plotter_args, trainer):
@@ -113,23 +114,41 @@ class Plotter:
     def create_target_direction(self):
         pass
 
-    def create_random_direction(self, ignore='bias_bn', norm='filter'):
+    def create_random_direction(self,name="x", ignore='bias_bn', norm='filter'):
         weights = self.get_weights()
-        direction = self.get_random_weights(weights)
-        direction = self.normalize_directions_for_weights(
-            direction,weights, norm ,ignore
-        )
+
+        if not self.args["load_directions"]:
+
+            raw_direction = self.get_random_weights(weights)
+            direction = self.normalize_directions_for_weights(
+                raw_direction,weights, norm ,ignore
+            )
+            if self.args["save_directions"]:
+                self.save_directions(direction, filename = name+".hdf5")
+        else:
+            raw_direction =self.load_directions(
+                path_to_direction = self.args["save_file"], filename=name+".hdf5")
+            direction = self.normalize_directions_for_weights(
+                raw_direction, weights, norm, ignore)
         return direction
         
+    def save_directions(self, directions,filename = "x.hdf5"):
+        save_to_hdf5 = os.path.join(self.args["save_file"],filename)
+        with h5py.File(save_to_hdf5,"w")as f:
+            grp = f.create_group("directions")
+            for i, w in enumerate(directions):
+                grp.create_dataset(str(i), data=w.numpy())
 
-    def setup_direction(self):
-        pass
 
-    def name_direction_file(self):
-        pass
-
-    def load_directions(self):
-        pass
+    def load_directions(self,path_to_direction, filename="x.hdf5"):
+        load_from_hdf5= os.path.join(path_to_direction, filename)
+        directions = []
+        pdb.set_trace()
+        with h5py.File(load_from_hdf5,"r")as f:
+            for key in f.keys:
+                d = f[key]
+                directions.append(tf.convert_to_tensor(d[1]))
+        return directions
     
     def plot_1d_loss(self, save_file="./result/1d"):
 
