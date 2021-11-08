@@ -145,7 +145,7 @@ class Plotter:
         load_from_hdf5= os.path.join(path_to_direction, filename)
         directions = []
         with h5py.File(load_from_hdf5,"r")as f:
-            d = f["direction"]
+            d = f["directions"]
             for key in d.keys():
                 directions.append(tf.convert_to_tensor(d[key][:]))
         return directions
