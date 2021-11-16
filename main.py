@@ -1,6 +1,6 @@
 from utils import *
 import argparse
-from trainer.uniform_trainer import UnifotmTrainer
+from trainer.uniform_trainer import UniformTrainer
 from trainer.cifa10_trainer import Cifar10Trainer
 from plotter import Plotter
 import os
@@ -19,7 +19,7 @@ if __name__ == "__main__":
     plotter_args = config['Plotter']
 
     if trainer_args['dataset']['name'] == 'uniform':
-        trainer = UnifotmTrainer(trainer_args)
+        trainer = UniformTrainer(trainer_args)
     elif trainer_args['dataset']['name'] == 'cifar10':
         trainer = Cifar10Trainer(trainer_args)
     plotter = Plotter(plotter_args, trainer)
