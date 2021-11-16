@@ -1,52 +1,25 @@
-import tensorflow as  tf
-import os
+import sys
+sys.path.append('..')
 
-from models import DNN 
-from data_generator import read_data_from_csv
 from utils import print_error
+from data_generator import read_data_from_csv
+from .base_trainer import BaseTrainer
+import tensorflow as tf
 
-
-class Trainer:
+class UniformTrainer(BaseTrainer):
     def __init__(self, args) :
-        self.args = args 
-
-        self.dataset = self._build_dataset(args['dataset'])
-        self.loss = self._build_loss(self.args['loss'])
-        self.metric = self._build_metric(self.args['metric'])
-        self.optimizer = self._build_optimizer(self.args['optimizer'])
-        self.model = self._build_model(self.args['model'])
-        self._just_build()
+        super(UniformTrainer, self).__init__(args=args)
 
     def _build_dataset(self, dataset_args) :
-        if dataset_args['name'] == 'uniform':
-            self.x_v = None
-            self.y_v = None
-            path_to_data = dataset_args['path_to_data']
-            dataset = read_data_from_csv(filename=path_to_data,
-                                         filepath='./',
-                                         batch_size=dataset_args['batch_size'],
-                                         CSV_COLUMNS=['x','y'],
-                                         num_epochs=dataset_args['epoch'])
-        elif dataset_args['name'] == 'cifar10':
-            
-        else:
-            dataset = None
+        self.x_v = None
+        self.y_v = None
+        dataset = read_data_from_csv(filename=dataset_args['path_to_data'],
+                                        batch_size=dataset_args['batch_size'],
+                                        CSV_COLUMNS=['x','y'],
+                                        num_epochs=dataset_args['epoch'])
 
         return dataset
 
-    def _build_envs(self):
-        physical_devices = tf.config.list_physical_devices('GPU')
-        for item in physical_devices:
-            tf.config.experimental.set_memory_growth(item,True)
-
-    def _build_model(self, model_args) :
-        if model_args['name'] == 'DNN':
-            model = DNN(units=model_args['units'],
-                            activactions=model_args['activations'],
-                            fuse_models=model_args['fuse_models'])
-        else:
-            model = None
-        return model
 
     def _just_build(self):
         try:
@@ -56,21 +29,6 @@ class Trainer:
             self.model(x['x'])
         except:
             print_error("build model with variables failed.")
-
-    def _build_metric(self,metric_args):
-        metric = tf.keras.metrics.get(metric_args['name'])
-        return metric
-
-    def _build_loss(self, loss_args) :
-        loss = tf.keras.losses.get(loss_args['name'])
-        return loss
-
-    def _build_optimizer(self, optimizer_args) :
-        if optimizer_args['name'] == 'SGD' :
-            optimizer = tf.keras.optimizers.SGD(learning_rate=optimizer_args['learning_rate'])
-        else:
-            optimizer = None
-        return optimizer
 
     def train_step(self,x):
         inputs = x['x']
@@ -84,20 +42,13 @@ class Trainer:
         self.optimizer.apply_gradients(zip(grad,self.model.trainable_variables))
         self.metric.update_state(loss)
 
-        
-
-    def valid_step(self,x):
-        inputs = x['x']
-        prediction = self.model(inputs)
-
-
-
     def run(self):
         iter_ds = iter(self.dataset)
 
         while True : 
             x = iter_ds.get_next()
             x['x'] = tf.reshape(x['x'],(-1,1))
+            x['y'] = tf.reshape(x['x'],(-1,1))
 
             self.train_step(x)
             print("loss:",self.metric.result().numpy())

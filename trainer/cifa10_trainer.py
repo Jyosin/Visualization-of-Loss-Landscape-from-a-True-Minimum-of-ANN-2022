@@ -4,18 +4,11 @@ import os
 from models import DNN 
 from data_generator import read_data_from_csv
 from utils import print_error
+from base_trainer import BaseTrainer
 
-
-class Trainer:
+class Cifar10Trainer(BaseTrainer):
     def __init__(self, args) :
-        self.args = args 
-
-        self.dataset = self._build_dataset(args['dataset'])
-        self.loss = self._build_loss(self.args['loss'])
-        self.metric = self._build_metric(self.args['metric'])
-        self.optimizer = self._build_optimizer(self.args['optimizer'])
-        self.model = self._build_model(self.args['model'])
-        self._just_build()
+       super(Cifar10Trainer, self).__init
 
     def _build_dataset(self, dataset_args) :
         if dataset_args['name'] == 'uniform':
@@ -27,7 +20,6 @@ class Trainer:
                                          batch_size=dataset_args['batch_size'],
                                          CSV_COLUMNS=['x','y'],
                                          num_epochs=dataset_args['epoch'])
-        elif dataset_args['name'] == 'cifar10':
             
         else:
             dataset = None
@@ -86,22 +78,6 @@ class Trainer:
 
         
 
-    def valid_step(self,x):
-        inputs = x['x']
-        prediction = self.model(inputs)
-
-
-
-    def run(self):
-        iter_ds = iter(self.dataset)
-
-        while True : 
-            x = iter_ds.get_next()
-            x['x'] = tf.reshape(x['x'],(-1,1))
-
-            self.train_step(x)
-            print("loss:",self.metric.result().numpy())
-            self.metric.reset_states()
 
     def save_model_weights(self,filepath='./saved_models',name = 'model.h5',save_format="h5"):
         num = len(os.listdir(filepath))
