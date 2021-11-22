@@ -1,23 +1,21 @@
+from data_generator import read_data_from_cifar10
+from utils import *
+from .base_trainer import BaseTrainer
+import time
+import tensorflow as tf
 import sys
 sys.path.append('..')
-
-import tensorflow as tf
-
-from .base_trainer import BaseTrainer
-from utils import print_error
-from data_generator import read_data_from_cifar10
 
 
 class Cifar10Trainer(BaseTrainer):
     def __init__(self, args):
         super(Cifar10Trainer, self).__init__(args=args)
 
-
     def _build_dataset(self, dataset_args):
         self.x_v = None
         self.y_v = None
         dataset = read_data_from_cifar10(batch_size=dataset_args['batch_size'],
-                                             num_epochs=dataset_args['epoch'])
+                                         num_epochs=dataset_args['epoch'])
         return dataset
 
     def _just_build(self):
@@ -37,7 +35,8 @@ class Cifar10Trainer(BaseTrainer):
         # L(x;theta) = |f(x;theta)-y| -> dL_dtheta
         with tf.GradientTape() as tape:
             prediction = self.model(inputs)
-            loss = self.loss(prediction, labels)
+            prediction = tf.squeeze(prediction)
+            loss = self.loss(labels, prediction)
             grad = tape.gradient(loss, self.model.trainable_variables)
 
         # theta = theta - alpha * grad // optimizer
@@ -48,12 +47,25 @@ class Cifar10Trainer(BaseTrainer):
         self.metric.update_state(loss)
 
     def run(self):
+        # import pdb
+        # pdb.set_trace()
+
         iter_ds = iter(self.dataset)
+        start_time = time.time()
+        flag = 0
         while True:
-            x = iter_ds.get_next()
+            try:
+                x = iter_ds.get_next()
+            except:
+                print_warning("run out of dataset.")
+                break
             self.train_step(x)
-            print("loss:", self.metric.result().numpy())
-            self.metric.reset_states()
+            if flag % 500 == 0:
+                print("loss:", self.metric.result().numpy())
+                self.metric.reset_states()
+            flag += 1
+        end_time = time.time()
+        print("training cost:{}".format(end_time - start_time))
 
     def device_self_evaluate(self, percent=20):
         # causue uniform dataset is small, so we load them directly to gpu mem.
