@@ -41,9 +41,7 @@ class Linear(keras.layers.Layer):
                 initial_value=init_b, trainable=True,
                 name="b"
             )
-    import pdb
-    pdb.set_trace()
-
+            
     def call(self, inputs):
         if self.fuse_layers == None:
             outputs = tf.matmul(inputs, self.w) + self.b
