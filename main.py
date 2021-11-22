@@ -5,7 +5,7 @@ from trainer.cifar10_trainer import Cifar10Trainer
 from plotter import Plotter
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
-import pdb
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
@@ -18,11 +18,12 @@ if __name__ == '__main__':
 
     trainer_args = config['Trainer']
     plotter_args = config['Plotter']
-    pdb.set_trace()
+
     if trainer_args['dataset']['name'] == 'uniform':
         trainer = UniformTrainer(trainer_args)
     elif trainer_args['dataset']['name'] == 'cifar10':
         trainer = Cifar10Trainer(trainer_args)
-    plotter = Plotter(plotter_args, trainer)
+        trainer.run()
+    # plotter = Plotter(plotter_args, trainer)
 
-    plotter.run()
+    # plotter.run()
