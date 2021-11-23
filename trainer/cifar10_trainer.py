@@ -59,7 +59,7 @@ class Cifar10Trainer(BaseTrainer):
                 # pdb.set_trace()
                 x = iter_ds.get_next()
             except:
-                print_warning("run out of dataset.")
+                print("run out of dataset.")
                 break
             self.train_step(x)
             if flag % 500 == 0:
