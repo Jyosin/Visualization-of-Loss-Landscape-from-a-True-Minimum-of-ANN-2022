@@ -41,11 +41,13 @@ class Linear(keras.layers.Layer):
                 initial_value=init_b, trainable=True,
                 name="b"
             )
-            
+
     def call(self, inputs):
         if self.fuse_layers == None:
             outputs = tf.matmul(inputs, self.w) + self.b
         else:
+            import pdb
+            pdb.set_trace()
             outputs = tf.matmul(inputs, self.fuse_w) + self.fuse_b
         return outputs
 
