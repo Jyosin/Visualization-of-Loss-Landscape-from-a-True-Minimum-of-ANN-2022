@@ -40,15 +40,19 @@ class BaseTrainer:
         loss = tf.keras.losses.get(loss_args['name'])
         return loss
 
-    def _build_optimizer(self, optimizer_args) :
-        if optimizer_args['name'] == 'SGD' :
-            optimizer = tf.keras.optimizers.SGD(learning_rate=optimizer_args['learning_rate'])
+    def _build_optimizer(self, optimizer_args):       
+
+        if optimizer_args['name'] == 'SGD':
+            optimizer = tf.keras.optimizers.SGD(
+                learning_rate=optimizer_args['learning_rate'])
         else:
-                try:
-                    optimizer = tf.keras.optimizers.get(optimizer_args['name'])
-                except:
-                    print_error("no such optimizer")
+            try:
+                optimizer = tf.keras.optimizers.get(optimizer_args['name'])
+            except:
+                print_error("no such optimizer")
         return optimizer
+
+
 
 
     def save_model_weights(self, filepath='./saved_models', name='latest.h5', save_format="h5"):
