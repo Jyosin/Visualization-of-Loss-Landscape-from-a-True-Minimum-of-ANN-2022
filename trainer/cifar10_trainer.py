@@ -45,6 +45,7 @@ class Cifar10Trainer(BaseTrainer):
 
         # metric update
         self.metric.update_state(loss)
+        return loss
 
     def run(self):
         # import pdb
@@ -55,17 +56,21 @@ class Cifar10Trainer(BaseTrainer):
         flag = 0
         while True:
             try:
-                # import pdb
-                # pdb.set_trace()
                 x = iter_ds.get_next()
             except:
                 print("run out of dataset.")
                 break
-            self.train_step(x)
-            if flag % 500 == 0:
-                print("loss:", self.metric.result().numpy())
+            loss = self.train_step(x)
+
+            if flag % 100 == 0:
+                train_log = "loss:{}, metric:{}".format(
+                    loss.numpy(), self.metric.result().numpy())
+                print(train_log)
+                write_to_file(
+                    path=self.args['others']['path_to_log'], filename="train.log", s=train_log)
                 self.metric.reset_states()
             flag += 1
+
         end_time = time.time()
         print("training cost:{}".format(end_time - start_time))
 
