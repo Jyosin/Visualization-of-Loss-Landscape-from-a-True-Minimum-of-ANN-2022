@@ -1,6 +1,6 @@
 from utils import *                                                         
-import argparse                                                              
-from trainer import UniformTrainer, Cifar10Trainer                                                               
+import argparse
+from trainer import UniformTrainer, Cifar10Trainer
 from plotter import Plotter
 from label_generator import generate_label_for_cifar10 
 import os                                 
