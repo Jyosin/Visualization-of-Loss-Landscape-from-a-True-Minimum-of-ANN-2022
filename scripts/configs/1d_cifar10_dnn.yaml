@@ -1,24 +1,27 @@
 Trainer:
   loss:
     name:
-      class_name: SparseCategoricalCrossentropy
-      config:
-        from_logits: True
+        class_name: SparseCategoricalCrossentropy
+        config:
+          from_logits: False
   metric: 
-    name: 'Mean'
+    name: 'SparseCategoricalAccuracy'
   optimizer:
-    name: 'SGD'
-    learning_rate: 0.01
+    name: 'Adam'
+    learning_rate: 0.001
   dataset:
     name: 'cifar10'
     batch_size: 128
-    epoch: 100
-    path_to_data: 'dataset/random/uniform/labeled.csv'
+    epoch: 1000
+    path_to_data: './dataset/image/cifar10/'
   model:
     name: 'DNN'
     units: [64,32,16,10]
     activations: [relu,relu,relu,softmax]
     fuse_models: 1
+    save_path_to_model: './dataset/model/cifar10/'
+  others:
+    path_to_log: './dataset/logs/cifar10/'
 
 Plotter:
   task: "1d"
