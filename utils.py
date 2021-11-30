@@ -43,9 +43,10 @@ def print_normal(*content):
     '''Print error information to screen'''
     print(NORMAL_INFO, *content)
 
-def print_error(*content):
-    '''Print error informaation to screen'''
-    print(Fore.YELLOW +  ERROR_INFO + ' '.join([str(c) for c in content]) + Fore.RESET)
+def print_warning(*content):
+    '''Print warning information to screen'''
+    print(Fore.YELLOW + WARNING_INFO + ' '.join([str(c) for c in content]) +
+          Fore.RESET)
 
 def print_dict(d, indent=0):
     for key,value in d.items():
