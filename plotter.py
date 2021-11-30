@@ -1,10 +1,10 @@
 import os
-import pdb
 import h5py
 import time
 import numpy as np
 import tensorflow as tf
 
+from data_generator import read_data_from_csv
 from utils import print_error
 
 
@@ -13,11 +13,20 @@ class Plotter:
         self.args = plotter_args
         self.step = plotter_args['step']
         self.num_evaluate = plotter_args['num_evaluate']
-        self.fuse_models = trainer.args['model']['fuse_models']
+        self.fuse_nums = None if plotter_args['fuse_nums'] == 'None' else plotter_args['fuse_nums']
         self.trainer = trainer
         self.model = trainer.model
         self.init_weights = [tf.convert_to_tensor(
             w) for w in self.model.trainable_weights]
+        self.adapt_label_dataset = self._build_adapt_label_dataset()
+
+    def _build_adapt_label_dataset(self):
+        adapt_label_dataset = read_data_from_csv(filename="labeled.csv",
+                                            filepath=self.args["path_to_adapt_label"],
+                                            batch_size=self.trainer.args["dataset"]["batch_size"],
+                                            num_epochs=1,
+                                            CSV_COLUMNS=['y'])
+        return adapt_label_dataset
 
     def get_init_weights(self):
         return self.init_weights
@@ -25,55 +34,30 @@ class Plotter:
     def get_weights(self):
         return self.model.trainable_weights
 
-    def fuse_directions(self, normalized_directions):
-        shift_directions = []
-        base_directions = []
-        for d in normalized_directions:
-            shift_direction = []
-            base_direction = []
-            for i in range(self.fuse_models):
-                base_direction.append(d)
-                shift_direction.append(d * (i+1))
-            shift_directions.append(tf.stack(shift_direction))
-            base_directions.append(tf.stack(base_direction))
-        return base_directions, shift_directions
-
     def set_weights(self, directions=None, step=0):
         # L(alpha * theta + (1- alpha)* theta') => L(theta + alpha * (theta-theta'))
         # L(theta + alpha * theta_1 + beta * theta_2)
         # Each direction have same shape with trainable weights
-
+        
         if len(directions) == 2:
-            # just fuse models in y direction.
             dx = directions[0]
             dy = directions[1]
-            x_changes = [step[0] * d for d in dx[0]]
-            # y_changes = [self.step[1] * d2 + step[1] * (self.fuse_models-1)
-            #              * d1 for (d1, d2) in zip(dy[0], dy[1])]
-            y_changes = [step[1] * d1 * self.fuse_models + self.step[1] * d2
-                         for (d1, d2) in zip(dy[0], dy[1])]
+            x_changes = [step[0] * d1 for d1 in dx]
+            y_changes = [step[1] * d2 for d2 in dy]
             changes = [x + y for (x, y) in zip(x_changes, y_changes)]
         else:
             dx = directions[0]
-            changes = [d1 * step *
-                       self.fuse_models + d2 * self.step for (d1, d2) in zip(dx[0], dx[1])]
-
+            changes = [d * step for d in dx]
+            
+        # should ref in model::set fuse weight.
         init_weights = self.get_init_weights()
         trainable_variables = self.get_weights()
-        for (i_w, w, change) in zip(init_weights, trainable_variables, changes):
-            w.assign(i_w + change)
+        for (i_w, t_w, change) in zip(init_weights, trainable_variables, changes):
+            t_w.assign(i_w + change)
 
     def get_random_weights(self, weights):
         # random w have save shape with w
-        if self.fuse_models == None:
-            return [tf.random.normal(w.shape) for w in weights]
-        else:
-            single_random_direction = []
-            for w in weights:
-                dims = list(w.shape)
-                single_random_direction.append(
-                    tf.random.normal(shape=dims[1:]))
-            return single_random_direction
+        return [tf.random.normal(w.shape) for w in weights]
 
     def get_diff_weights(self, weights_1, weights_2):
         return [w2 - w1 for (w1, w2) in zip(weights_1, weights_2)]
@@ -112,15 +96,11 @@ class Plotter:
             else:
                 normalized_direction.append(
                     self.normalize_direction(d, w, norm))
-        fused_normalized_direction = []
-        if self.fuse_models != None:
-            fused_normalized_direction = self.fuse_directions(
-                normalized_direction)
-        return fused_normalized_direction
+        return normalized_direction
 
     def create_random_direction(self, name="x", ignore='bias_bn', norm='filter'):
         weights = self.get_weights()  # a list of parameters.
-        
+
         if not self.args["load_directions"]:
             raw_direction = self.get_random_weights(weights)
             direction = self.normalize_directions_for_weights(
@@ -160,16 +140,16 @@ class Plotter:
             path_to_csv = os.path.join(save_file, 'result.csv')
 
         # set init state
-        fused_direction = self.create_random_direction(
+        directions = self.create_random_direction(
             norm='layer', name='x')
-        directions = fused_direction
 
-        # plot num_evaluate * fuse_models points in lossland
+        # plot num_evaluate points in lossland
         start_time = time.time()
         for i in range(self.num_evaluate):
             step = self.step*(i-self.num_evaluate/2)
             self.set_weights(directions=[directions], step=step)
-            avg_loss = self.trainer.device_self_evaluate()
+            avg_loss = self.trainer.device_self_evaluate(
+                adapt_label_dataset=self.adapt_label_dataset)
             with open(path_to_csv, "ab") as f:
                 np.savetxt(f, avg_loss, comments="")
         end_time = time.time()
@@ -191,7 +171,7 @@ class Plotter:
             norm='layer', name='y')
         directions = [direction_x, direction_y]
 
-        # plot num_evaluate * fuse_models points in lossland
+        # plot num_evaluate points in lossland
         start_time = time.time()
 
         for i in range(self.num_evaluate[0]):
@@ -200,7 +180,8 @@ class Plotter:
                 y_shift_step = self.step[1] * (j-self.num_evaluate[1]/2)
                 step = [x_shift_step, y_shift_step]
                 self.set_weights(directions=directions, step=step)
-                avg_loss = self.trainer.device_self_evaluate()
+                avg_loss = self.trainer.device_self_evaluate(
+                    adapt_label_dataset=self.adapt_label_dataset)
                 with open(path_to_csv, "ab") as f:
                     np.savetxt(f, avg_loss, comments="")
 
