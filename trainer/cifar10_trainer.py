@@ -1,4 +1,7 @@
-from data_generator import read_data_from_cifar10
+import pdb
+
+from tensorflow.python.util.compat import path_to_str
+from data_generator import read_data_from_cifar10, read_data_from_csv
 from utils import *
 from .base_trainer import BaseTrainer
 import time
@@ -37,7 +40,6 @@ class Cifar10Trainer(BaseTrainer):
         # L(x;theta) = |f(x;theta)-y| -> dL_dtheta
         with tf.GradientTape() as tape:
             prediction = self.model(inputs)
-            prediction = tf.squeeze(prediction)
             loss = self.loss(labels, prediction)
             grad = tape.gradient(loss, self.model.trainable_variables)
 
@@ -50,8 +52,6 @@ class Cifar10Trainer(BaseTrainer):
         return loss
 
     def run(self):
-        # import pdb
-        # pdb.set_trace()
 
         iter_ds = iter(self.dataset)
         start_time = time.time()
@@ -60,10 +60,9 @@ class Cifar10Trainer(BaseTrainer):
             try:
                 x = iter_ds.get_next()
             except:
-                print("run out of dataset.")
+                print_warning("run out of dataset.")
                 break
             loss = self.train_step(x)
-
             if flag % 100 == 0:
                 train_log = "loss:{}, metric:{}".format(
                     loss.numpy(), self.metric.result().numpy())
@@ -76,43 +75,54 @@ class Cifar10Trainer(BaseTrainer):
         end_time = time.time()
         print("training cost:{}".format(end_time - start_time))
 
-    def device_self_evaluate(self, percent=20):
-        # causue uniform dataset is small, so we load them directly to gpu mem.
-        iter_test = iter(self.dataset)
-        self.metric.reset_states()
+        # check if save trained model.
+        if 'save_path_to_model' in self.args['model']:
+            self.save_model_weights(
+                filepath=self.args['model']['save_path_to_model'])
 
-        all_x = []
-        all_y = []
+    def device_self_evaluate(self, adapt_label_dataset, batch_nums=100):
+        # causue cifar10 dataset is small, so we load them directly to gpu mem.
+
         if self.x_v == None or self.y_v == None:
-            while True and percent != 0:
+            all_x = []
+            all_y = []
+            iter_test = iter(self.plotter_dataset)
+            iter_label = iter(adapt_label_dataset)
+            for _ in range(batch_nums):
                 try:
                     x = iter_test.get_next()
+                    y = iter_label.get_next()
                     all_x.append(x['x'])
-                    all_y.append(x['y'])
-                    percent -= 1
+                    all_y.append(y['y'])
+                    batch_nums -= 1
                 except:
-                    print("run out of data. ")
+                    print_error("run out of data to put in device. ")
                     break
-            self.x_v = tf.concat(all_x, axis=0)
-            self.y_v = tf.concat(all_y, axis=0)
+            with tf.device("/device:gpu:0"):
+                self.x_v = tf.concat(all_x, axis=0)
+                self.y_v = tf.concat(all_y, axis=0)
 
-        avg_loss = self.uniform_evaluate_in_all(self.x_v, self.y_v)
-        avg_loss = tf.reshape(avg_loss, shape=(-1, 1))
-        np_avg_loss = avg_loss.numpy()
+        print(self.x_v.device, self.y_v.device)
+        with tf.device("/device:gpu:0"):
+            _, avg_metric = self.evaluate_in_all(self.x_v, self.y_v)
+            avg_metric = tf.constant(1.0) - self.metric.result()
+            avg_metric = tf.reshape(avg_metric, shape=(-1, 1))
+        np_avg_metric = avg_metric.numpy()
 
-        return np_avg_loss
+        return np_avg_metric
 
     # @tf.function(experimental_relax_shapes=True)
     def evaluate_in_all(self, inputs, labels):
         prediction = self.model(inputs)
-        loss = self.loss(prediction, labels)
-        if self.args['model']['fuse_models'] == None:
-            self.metric.update_state(loss)
-            avg_loss = self.metric.result()
-        else:
-            avg_loss = tf.reduce_mean(loss, axis=-1)
 
-        return avg_loss
+        # loss
+        loss = self.loss(labels, prediction)
+
+        # metric
+        self.metric.reset_states()
+        metric = self.metric.update_state(labels, prediction)
+
+        return loss, metric
 
     def self_evaluate(self):
         iter_test = iter(self.dataset)

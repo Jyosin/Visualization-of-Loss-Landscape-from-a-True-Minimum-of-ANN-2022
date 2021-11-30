@@ -1,9 +1,9 @@
-from utils import *                                                         
+from utils import *
 import argparse
 from trainer import UniformTrainer, Cifar10Trainer
 from plotter import Plotter
-from label_generator import generate_label_for_cifar10 
-import os                                 
+from label_generator import generate_label_for_cifar10
+import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 
@@ -24,9 +24,10 @@ if __name__ == '__main__':
     elif trainer_args['dataset']['name'] == 'cifar10':
         trainer = Cifar10Trainer(trainer_args)
         trainer.run()
-    # plotter = Plotter(plotter_args, trainer)
 
+    # generate_label_for_cifar10(dataset=iter(trainer.plotter_dataset),
+    #                            model=trainer.model,
+    #                            path_to_file=trainer_args['dataset']['path_to_data'])
+
+    # plotter = Plotter(plotter_args, trainer)
     # plotter.run()
-    generate_label_for_cifar10(dataset=iter(trainer.plotter_dataset),
-                                model = trainer.model,
-                                path_to_file=trainer_args['dataset']['path_to_data'])
